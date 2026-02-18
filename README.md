@@ -4,7 +4,7 @@ A Backend project using SpringBoot that lets teams handle task management, user 
 This project is built from scratch to understand core backend features and implementation techniques.
 
 The following base model is being followed:
-![model-relations](Relational Diagram.png)
+![model-relations](relational-diagram.png)
 
 
 ## Planned Features
