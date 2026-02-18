@@ -9,25 +9,25 @@ The following base model is being followed:
 
 ## Planned Role Based Access
 Admin -
-  Create teams
-  Add/remove users from teams
-  Assign roles
-  Delete teams
-  View everything
+- Create teams
+- Add/remove users from teams
+- Assign roles
+- Delete teams
+- View everything
 
 Manager-
-  Create tasks
-  Assign tasks to users
-  Update any task in their team
-  View team tasks
-  Add comments
+- Create tasks
+- Assign tasks to users
+- Update any task in their team
+- View team tasks
+- Add comments
 
 Member-
-  View tasks assigned to them
-  Update status of their own tasks
-  Add comments
-  Cannot assign tasks
-  Cannot delete teams
+- View tasks assigned to them
+- Update status of their own tasks
+- Add comments
+- Cannot assign tasks
+- Cannot delete teams
 
 
 ## Planned Features
