@@ -32,7 +32,7 @@ Member-
 
 ## Planned Features
 
-- Task CRUD operations
+- ~~Task CRUD operations~~
 - User registration and login
 - JWT Authentication
 - Role-based authorization (ADMIN, MANAGER, MEMBER)
@@ -56,3 +56,5 @@ Member-
   - TaskPriority
   - UserRole
 - Basic database structure prepared
+- Task CRUD operations
+- H2 database connected
