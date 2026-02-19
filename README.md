@@ -3,7 +3,7 @@ TaskMan: A Team Task & Workflow Management System
 A Backend project using SpringBoot that lets teams handle task management, user assigning and workflow status tracking.
 This project is built from scratch to understand core backend features and implementation techniques.
 
-The following base model is being followed:
+The following model is planned for now:
 ![model-relations](relational-diagram.png)
 
 
@@ -60,3 +60,4 @@ Member-
 - H2 database connected
 - User CRUD operations
 - Task and User relationship mapped
+- Task assignment and unassignment handled
