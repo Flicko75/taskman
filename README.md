@@ -58,3 +58,5 @@ Member-
 - Basic database structure prepared
 - Task CRUD operations
 - H2 database connected
+- User CRUD operations
+- Task and User relationship mapped
