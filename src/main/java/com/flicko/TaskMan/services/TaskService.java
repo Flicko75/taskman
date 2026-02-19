@@ -59,4 +59,13 @@ public class TaskService {
 
         return taskRepository.save(oldTask);
     }
+
+    public Task unassignTask(Long id) {
+        Task oldTask = taskRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Task not found"));
+
+        oldTask.setUser(null);
+
+        return taskRepository.save(oldTask);
+    }
 }

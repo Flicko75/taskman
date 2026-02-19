@@ -45,4 +45,9 @@ public class TaskController {
         return taskService.assignTask(taskId, userId);
     }
 
+    @PutMapping("/{id}/unassign")
+    public Task unassignTask(@PathVariable Long id){
+        return taskService.unassignTask(id);
+    }
+
 }
