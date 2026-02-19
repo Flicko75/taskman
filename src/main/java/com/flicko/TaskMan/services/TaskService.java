@@ -3,6 +3,7 @@ package com.flicko.TaskMan.services;
 import com.flicko.TaskMan.DTOs.TaskUpdate;
 import com.flicko.TaskMan.models.Task;
 import com.flicko.TaskMan.repos.TaskRepository;
+import com.flicko.TaskMan.repos.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -13,6 +14,8 @@ import java.util.List;
 public class TaskService {
 
     private final TaskRepository taskRepository;
+
+    private final UserRepository userRepository;
 
     public List<Task> getAllTasks() {
         return taskRepository.findAll();
@@ -45,5 +48,15 @@ public class TaskService {
                 .orElseThrow(() -> new RuntimeException("No Task Found"));
 
         taskRepository.delete(task);
+    }
+
+    public Task assignTask(Long taskId, Long userId) {
+        Task oldTask = taskRepository.findById(taskId)
+                .orElseThrow(() -> new RuntimeException("Task not found"));
+
+        oldTask.setUser(userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found")));
+
+        return taskRepository.save(oldTask);
     }
 }
