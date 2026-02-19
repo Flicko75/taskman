@@ -1,8 +1,11 @@
 package com.flicko.TaskMan.models;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.flicko.TaskMan.enums.UserRole;
 import jakarta.persistence.*;
 import lombok.Data;
+
+import java.util.List;
 
 @Entity
 @Data
@@ -21,5 +24,9 @@ public class User {
 
     @Enumerated(EnumType.STRING)
     private UserRole role;
+
+    @JsonIgnore
+    @OneToMany(mappedBy = "user")
+    private List<Task> tasks;
 
 }

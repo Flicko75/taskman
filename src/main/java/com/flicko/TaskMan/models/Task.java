@@ -34,4 +34,8 @@ public class Task {
         this.createdAt = LocalDateTime.now();
     }
 
+    @ManyToOne
+    @JoinColumn(name = "user_id", nullable = true)
+    private User user;
+
 }
