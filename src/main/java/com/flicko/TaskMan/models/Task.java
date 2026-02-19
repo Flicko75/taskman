@@ -38,4 +38,8 @@ public class Task {
     @JoinColumn(name = "user_id", nullable = true)
     private User user;
 
+    @ManyToOne
+    @JoinColumn(name = "team_id", nullable = true)
+    private Team team;
+
 }

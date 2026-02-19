@@ -30,4 +30,8 @@ public class User {
     @OneToMany(mappedBy = "user")
     private List<Task> tasks;
 
+    @ManyToOne
+    @JoinColumn(name = "team_id", nullable = true)
+    private Team team;
+
 }
