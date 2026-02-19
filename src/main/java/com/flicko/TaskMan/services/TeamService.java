@@ -24,6 +24,13 @@ public class TeamService {
     }
 
     public Team createTeam(Team team) {
+        String normalizedName = team.getName().trim();
+
+        if (teamRepository.existsByName(normalizedName)){
+            throw new RuntimeException("Team name already exists");
+        }
+
+        team.setName(normalizedName);
         return teamRepository.save(team);
     }
 
@@ -31,7 +38,13 @@ public class TeamService {
         Team oldTeam = teamRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Team not found"));
 
-        oldTeam.setName(team.getName());
+        String normalizedName = team.getName().trim();
+        if (!oldTeam.getName().equals(normalizedName)
+                && teamRepository.existsByNameAndIdNot(normalizedName, oldTeam.getId())){
+            throw new RuntimeException("Team name already exists");
+        }
+
+        oldTeam.setName(normalizedName);
         oldTeam.setDescription(team.getDescription());
 
         return teamRepository.save(oldTeam);
