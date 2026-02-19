@@ -1,5 +1,6 @@
 package com.flicko.TaskMan.controllers;
 
+import com.flicko.TaskMan.DTOs.TeamUpdate;
 import com.flicko.TaskMan.models.Team;
 import com.flicko.TaskMan.services.TeamService;
 import lombok.RequiredArgsConstructor;
@@ -30,7 +31,7 @@ public class TeamController {
     }
 
     @PutMapping("/{id}")
-    public Team updateTeam(@PathVariable Long id, @RequestBody Team team){
+    public Team updateTeam(@PathVariable Long id, @RequestBody TeamUpdate team){
         return teamService.updateTeam(id, team);
     }
 
