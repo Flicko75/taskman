@@ -2,10 +2,12 @@ package com.flicko.TaskMan.services;
 
 import com.flicko.TaskMan.DTOs.TaskUpdate;
 import com.flicko.TaskMan.models.Task;
+import com.flicko.TaskMan.models.User;
 import com.flicko.TaskMan.repos.TaskRepository;
 import com.flicko.TaskMan.repos.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -50,22 +52,35 @@ public class TaskService {
         taskRepository.delete(task);
     }
 
+    @Transactional
     public Task assignTask(Long taskId, Long userId) {
-        Task oldTask = taskRepository.findById(taskId)
+        Task task = taskRepository.findById(taskId)
                 .orElseThrow(() -> new RuntimeException("Task not found"));
 
-        oldTask.setUser(userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("User not found")));
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
 
-        return taskRepository.save(oldTask);
+        if (task.getTeam() == null || user.getTeam() == null){
+            throw new RuntimeException("Task and User need to belong to a team");
+        }
+
+        if (!task.getTeam().getId().equals(user.getTeam().getId())){
+            throw new RuntimeException("User needs to be of same team as task");
+        }
+        task.setUser(user);
+
+        return taskRepository.save(task);
     }
 
     public Task unassignTask(Long id) {
-        Task oldTask = taskRepository.findById(id)
+        Task task = taskRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Task not found"));
 
-        oldTask.setUser(null);
+        if (task.getUser() == null) {
+            throw new RuntimeException("Task is already unassigned");
+        }
+        task.setUser(null);
 
-        return taskRepository.save(oldTask);
+        return taskRepository.save(task);
     }
 }
