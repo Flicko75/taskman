@@ -4,7 +4,9 @@ import com.flicko.TaskMan.DTOs.UserRoleUpdate;
 import com.flicko.TaskMan.DTOs.UserUpdate;
 import com.flicko.TaskMan.models.User;
 import com.flicko.TaskMan.services.UserService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.Value;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -27,17 +29,17 @@ public class UserController {
     }
 
     @PostMapping
-    public User addUser(@RequestBody User user){
+    public User addUser(@Valid @RequestBody User user){
         return userService.addUser(user);
     }
 
     @PutMapping("/{id}")
-    public User updateUser(@PathVariable Long id, @RequestBody UserUpdate user){
+    public User updateUser(@PathVariable Long id, @Valid @RequestBody UserUpdate user){
         return userService.updateUser(id, user);
     }
 
     @PutMapping("/{id}/role")
-    public User updateUserRole(@PathVariable Long id, @RequestBody UserRoleUpdate user){
+    public User updateUserRole(@PathVariable Long id, @Valid @RequestBody UserRoleUpdate user){
         return userService.updateUserRole(id, user);
     }
 

@@ -64,7 +64,6 @@ public class UserService {
 
         oldUser.setName(user.getName());
         oldUser.setEmail(user.getEmail());
-        oldUser.setPassword(user.getPassword());
 
         return userRepository.save(oldUser);
     }

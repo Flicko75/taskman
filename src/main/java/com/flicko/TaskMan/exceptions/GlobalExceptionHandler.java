@@ -3,10 +3,13 @@ package com.flicko.TaskMan.exceptions;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @ControllerAdvice
 public class GlobalExceptionHandler {
@@ -21,7 +24,8 @@ public class GlobalExceptionHandler {
                 HttpStatus.NOT_FOUND.value(),
                 HttpStatus.NOT_FOUND.getReasonPhrase(),
                 exception.getMessage(),
-                request.getRequestURI()
+                request.getRequestURI(),
+                null
         );
 
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(error);
@@ -37,7 +41,8 @@ public class GlobalExceptionHandler {
                 HttpStatus.CONFLICT.value(),
                 HttpStatus.CONFLICT.getReasonPhrase(),
                 exception.getMessage(),
-                request.getRequestURI()
+                request.getRequestURI(),
+                null
         );
 
         return ResponseEntity.status(HttpStatus.CONFLICT).body(error);
@@ -53,7 +58,34 @@ public class GlobalExceptionHandler {
                 HttpStatus.BAD_REQUEST.value(),
                 HttpStatus.BAD_REQUEST.getReasonPhrase(),
                 exception.getMessage(),
-                request.getRequestURI()
+                request.getRequestURI(),
+                null
+        );
+
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
+    }
+
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<ApiError> handleMethodArgumentNotValid(
+            MethodArgumentNotValidException exception,
+            HttpServletRequest request
+    ){
+        List<String> validationErrors = new ArrayList<>();
+
+        exception.getBindingResult()
+                .getFieldErrors()
+                .forEach(fieldError ->
+                        validationErrors.add(
+                                fieldError.getField() + ":" + fieldError.getDefaultMessage()
+                        ));
+
+        ApiError error = new ApiError(
+                LocalDateTime.now(),
+                HttpStatus.BAD_REQUEST.value(),
+                HttpStatus.BAD_REQUEST.getReasonPhrase(),
+                exception.getMessage(),
+                request.getRequestURI(),
+                validationErrors
         );
 
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
@@ -69,7 +101,8 @@ public class GlobalExceptionHandler {
                 HttpStatus.INTERNAL_SERVER_ERROR.value(),
                 HttpStatus.INTERNAL_SERVER_ERROR.getReasonPhrase(),
                 "Unexpected error occurred",
-                request.getRequestURI()
+                request.getRequestURI(),
+                null
         );
 
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error);

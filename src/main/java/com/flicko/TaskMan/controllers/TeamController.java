@@ -3,6 +3,7 @@ package com.flicko.TaskMan.controllers;
 import com.flicko.TaskMan.DTOs.TeamUpdate;
 import com.flicko.TaskMan.models.Team;
 import com.flicko.TaskMan.services.TeamService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
@@ -26,12 +27,12 @@ public class TeamController {
     }
 
     @PostMapping
-    public Team createTeam(@RequestBody Team team){
+    public Team createTeam(@Valid @RequestBody Team team){
         return teamService.createTeam(team);
     }
 
     @PutMapping("/{id}")
-    public Team updateTeam(@PathVariable Long id, @RequestBody TeamUpdate team){
+    public Team updateTeam(@PathVariable Long id, @Valid @RequestBody TeamUpdate team){
         return teamService.updateTeam(id, team);
     }
 
