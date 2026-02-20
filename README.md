@@ -33,14 +33,61 @@ Member-
 ## Planned Features
 
 - ~~Task CRUD operations~~
+- ~~Team management~~
 - User registration and login
 - JWT Authentication
 - Role-based authorization (ADMIN, MANAGER, MEMBER)
-- Team management
 - Comments on tasks
 - Filtering and pagination
 - Docker deployment
 
+## Business Rules
+### User Rules
+1. User Creation 
+   - User can be created without belonging to a team. 
+   - Password is hidden from API responses. 
+   - Role is assigned at creation (ADMIN, MANAGER, MEMBER).
+2. User Deletion
+   - If user is the only ADMIN, deletion is blocked.
+   - All tasks assigned to the user are unassigned before deletion.
+   - Tasks are NOT deleted.
+3. Assign User to Team 
+   - If user already belongs to that team then no changes.
+   - If user belongs to another team:
+     - All assigned tasks are unassigned.
+     - Then user is moved to new team.
+4. Unassign User from Team
+   - User must currently belong to a team.
+   - All assigned tasks are unassigned.
+   - Then user.team is set to null.
+
+### Team Rules
+1. Team Creation
+   - Team name must be unique.
+   - Name is normalized (trimmed).
+   - Database-level unique constraint.
+2. Team Update
+   - Name is normalized.
+   - If name is changed:
+     - Must remain unique.
+     - Description can be updated freely.
+3. Team Deletion
+   - If team has tasks → deletion is blocked.
+   - If team has users:
+     - Users are automatically unassigned.
+     - Team is deleted only after cleanup.
+
+### Task Rules
+1. Task Creation
+   - Task must belong to a team.
+   - Task may initially be unassigned (user = null).
+2. Assign Task to User
+   - Both task and user must belong to a team.
+   - If teams differ → assignment is rejected.
+   - Reassignment to another user is allowed.
+3. Unassign Task
+   - Task must currently have a user assigned.
+   - No team validation required.
 
 ## Current Progress
 
@@ -61,3 +108,5 @@ Member-
 - User CRUD operations
 - Task and User relationship mapped
 - Task assignment and unassignment handled
+- Team CRUD operations
+- User assignment and unassignment
