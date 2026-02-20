@@ -2,9 +2,12 @@ package com.flicko.TaskMan.services;
 
 import com.flicko.TaskMan.DTOs.TeamUpdate;
 import com.flicko.TaskMan.models.Team;
+import com.flicko.TaskMan.models.User;
 import com.flicko.TaskMan.repos.TeamRepository;
+import com.flicko.TaskMan.repos.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -50,10 +53,16 @@ public class TeamService {
         return teamRepository.save(oldTeam);
     }
 
+    @Transactional
     public void deleteTeam(Long id) {
-        Team oldTeam = teamRepository.findById(id)
+        Team team = teamRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Team not found"));
 
-        teamRepository.delete(oldTeam);
+        if (!team.getTasks().isEmpty())
+            throw new RuntimeException("Can't remove while it has assigned tasks");
+
+        team.getUsers().forEach(user -> user.setTeam(null));
+
+        teamRepository.delete(team);
     }
 }
