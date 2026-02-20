@@ -1,6 +1,9 @@
 package com.flicko.TaskMan.services;
 
 import com.flicko.TaskMan.DTOs.TeamUpdate;
+import com.flicko.TaskMan.exceptions.DuplicateResourceException;
+import com.flicko.TaskMan.exceptions.InvalidOperationException;
+import com.flicko.TaskMan.exceptions.ResourceNotFoundException;
 import com.flicko.TaskMan.models.Team;
 import com.flicko.TaskMan.models.User;
 import com.flicko.TaskMan.repos.TeamRepository;
@@ -23,14 +26,14 @@ public class TeamService {
 
     public Team getTeamById(Long id) {
         return teamRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Team not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Team not found"));
     }
 
     public Team createTeam(Team team) {
         String normalizedName = team.getName().trim();
 
         if (teamRepository.existsByName(normalizedName)){
-            throw new RuntimeException("Team name already exists");
+            throw new DuplicateResourceException("Team name already exists");
         }
 
         team.setName(normalizedName);
@@ -39,12 +42,12 @@ public class TeamService {
 
     public Team updateTeam(Long id, TeamUpdate team) {
         Team oldTeam = teamRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Team not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Team not found"));
 
         String normalizedName = team.getName().trim();
         if (!oldTeam.getName().equals(normalizedName)
                 && teamRepository.existsByNameAndIdNot(normalizedName, oldTeam.getId())){
-            throw new RuntimeException("Team name already exists");
+            throw new DuplicateResourceException("Team name already exists");
         }
 
         oldTeam.setName(normalizedName);
@@ -56,10 +59,10 @@ public class TeamService {
     @Transactional
     public void deleteTeam(Long id) {
         Team team = teamRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Team not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Team not found"));
 
         if (!team.getTasks().isEmpty())
-            throw new RuntimeException("Can't remove while it has assigned tasks");
+            throw new InvalidOperationException("Can't remove while it has assigned tasks");
 
         team.getUsers().forEach(user -> user.setTeam(null));
 

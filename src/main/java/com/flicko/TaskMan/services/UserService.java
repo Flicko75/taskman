@@ -3,6 +3,8 @@ package com.flicko.TaskMan.services;
 import com.flicko.TaskMan.DTOs.UserRoleUpdate;
 import com.flicko.TaskMan.DTOs.UserUpdate;
 import com.flicko.TaskMan.enums.UserRole;
+import com.flicko.TaskMan.exceptions.InvalidOperationException;
+import com.flicko.TaskMan.exceptions.ResourceNotFoundException;
 import com.flicko.TaskMan.models.Task;
 import com.flicko.TaskMan.models.Team;
 import com.flicko.TaskMan.models.User;
@@ -31,7 +33,7 @@ public class UserService {
 
     public User getUserById(Long id) {
         return userRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
     }
 
     public User addUser(User user) {
@@ -41,10 +43,10 @@ public class UserService {
     @Transactional
     public void deleteUser(Long id) {
         User user = userRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
         if (user.getRole() == UserRole.ADMIN && userRepository.countByRole(UserRole.ADMIN) <= 1){
-            throw new RuntimeException("Can't delete only ADMIN");
+            throw new InvalidOperationException("Can't delete only ADMIN");
         }
 
         List<Task> tasks = taskRepository.findByUserId(id);
@@ -58,7 +60,7 @@ public class UserService {
 
     public User updateUser(Long id, UserUpdate user) {
         User oldUser = userRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
         oldUser.setName(user.getName());
         oldUser.setEmail(user.getEmail());
@@ -69,7 +71,7 @@ public class UserService {
 
     public User updateUserRole(Long id, UserRoleUpdate user) {
         User oldUser = userRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
         oldUser.setRole(user.getRole());
 
@@ -79,10 +81,10 @@ public class UserService {
     @Transactional
     public User assignUser(Long userId, Long teamId) {
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
         Team team = teamRepository.findById(teamId)
-                .orElseThrow(() -> new RuntimeException("Team not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Team not found"));
 
         if (user.getTeam() != null &&
             user.getTeam().getId().equals(team.getId()))
@@ -100,10 +102,10 @@ public class UserService {
     @Transactional
     public User unassignUser(Long userId) {
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
         if (user.getTeam() == null){
-            throw new RuntimeException("User is not assigned to any team");
+            throw new InvalidOperationException("User is not assigned to any team");
         }
 
         user.getTasks().forEach(task -> task.setUser(null));

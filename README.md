@@ -110,3 +110,4 @@ Member-
 - Task assignment and unassignment handled
 - Team CRUD operations
 - User assignment and unassignment
+- Custom exceptions added

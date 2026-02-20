@@ -1,6 +1,8 @@
 package com.flicko.TaskMan.services;
 
 import com.flicko.TaskMan.DTOs.TaskUpdate;
+import com.flicko.TaskMan.exceptions.InvalidOperationException;
+import com.flicko.TaskMan.exceptions.ResourceNotFoundException;
 import com.flicko.TaskMan.models.Task;
 import com.flicko.TaskMan.models.User;
 import com.flicko.TaskMan.repos.TaskRepository;
@@ -47,7 +49,7 @@ public class TaskService {
 
     public void deleteTask(Long id) {
         Task task = taskRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("No Task Found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Task not found"));
 
         taskRepository.delete(task);
     }
@@ -55,17 +57,17 @@ public class TaskService {
     @Transactional
     public Task assignTask(Long taskId, Long userId) {
         Task task = taskRepository.findById(taskId)
-                .orElseThrow(() -> new RuntimeException("Task not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Task not found"));
 
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
         if (task.getTeam() == null || user.getTeam() == null){
-            throw new RuntimeException("Task and User need to belong to a team");
+            throw new InvalidOperationException("Task and User need to belong to a team");
         }
 
         if (!task.getTeam().getId().equals(user.getTeam().getId())){
-            throw new RuntimeException("User needs to be of same team as task");
+            throw new InvalidOperationException("User needs to be of same team as task");
         }
         task.setUser(user);
 
@@ -74,10 +76,10 @@ public class TaskService {
 
     public Task unassignTask(Long id) {
         Task task = taskRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Task not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Task not found"));
 
         if (task.getUser() == null) {
-            throw new RuntimeException("Task is already unassigned");
+            throw new InvalidOperationException("Task is already unassigned");
         }
         task.setUser(null);
 
