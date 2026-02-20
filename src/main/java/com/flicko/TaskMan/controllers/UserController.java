@@ -46,4 +46,14 @@ public class UserController {
         userService.deleteUser(id);
     }
 
+    @PutMapping("/{userId}/assign/{teamId}")
+    public User assignUser(@PathVariable Long userId, @PathVariable Long teamId){
+        return userService.assignUser(userId, teamId);
+    }
+
+    @PutMapping("/{userId}/unassign")
+    public User unassignUser(@PathVariable Long userId){
+        return userService.unassignUser(userId);
+    }
+
 }

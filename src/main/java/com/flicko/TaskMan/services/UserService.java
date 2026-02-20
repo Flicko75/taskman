@@ -4,8 +4,10 @@ import com.flicko.TaskMan.DTOs.UserRoleUpdate;
 import com.flicko.TaskMan.DTOs.UserUpdate;
 import com.flicko.TaskMan.enums.UserRole;
 import com.flicko.TaskMan.models.Task;
+import com.flicko.TaskMan.models.Team;
 import com.flicko.TaskMan.models.User;
 import com.flicko.TaskMan.repos.TaskRepository;
+import com.flicko.TaskMan.repos.TeamRepository;
 import com.flicko.TaskMan.repos.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -20,6 +22,8 @@ public class UserService {
     private final UserRepository userRepository;
 
     private final TaskRepository taskRepository;
+
+    private final TeamRepository teamRepository;
 
     public List<User> getAllUsers() {
         return userRepository.findAll();
@@ -70,5 +74,41 @@ public class UserService {
         oldUser.setRole(user.getRole());
 
         return userRepository.save(oldUser);
+    }
+
+    @Transactional
+    public User assignUser(Long userId, Long teamId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        Team team = teamRepository.findById(teamId)
+                .orElseThrow(() -> new RuntimeException("Team not found"));
+
+        if (user.getTeam() != null &&
+            user.getTeam().getId().equals(team.getId()))
+            return user;
+
+        List<Task> tasks = user.getTasks();
+        tasks.forEach(task -> task.setUser(null));
+
+        user.setTeam(team);
+
+        return userRepository.save(user);
+
+    }
+
+    @Transactional
+    public User unassignUser(Long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        if (user.getTeam() == null){
+            throw new RuntimeException("User is not assigned to any team");
+        }
+
+        user.getTasks().forEach(task -> task.setUser(null));
+
+        user.setTeam(null);
+        return user;
     }
 }
