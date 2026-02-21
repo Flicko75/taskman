@@ -1,5 +1,6 @@
 package com.flicko.TaskMan.models;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.flicko.TaskMan.enums.TaskPriority;
 import com.flicko.TaskMan.enums.TaskStatus;
 import jakarta.persistence.*;
@@ -8,6 +9,7 @@ import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Entity
 @Data
@@ -47,5 +49,9 @@ public class Task {
     @ManyToOne
     @JoinColumn(name = "team_id", nullable = true)
     private Team team;
+
+    @JsonIgnore
+    @OneToMany(mappedBy = "task")
+    private List<Comment> comments;
 
 }

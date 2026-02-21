@@ -1,6 +1,7 @@
 package com.flicko.TaskMan.models;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
 
 import java.time.LocalDateTime;
@@ -13,6 +14,7 @@ public class Comment {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @NotBlank
     private String content;
 
     private LocalDateTime createdAt;
@@ -21,5 +23,13 @@ public class Comment {
     public void setCreatedAt() {
         this.createdAt = LocalDateTime.now();
     }
+
+    @ManyToOne
+    @JoinColumn(name = "task_id", nullable = true)
+    private Task task;
+
+    @ManyToOne
+    @JoinColumn(name = "user_id", nullable = true)
+    private User user;
 
 }

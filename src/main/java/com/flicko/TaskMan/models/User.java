@@ -42,4 +42,8 @@ public class User {
     @JoinColumn(name = "team_id", nullable = true)
     private Team team;
 
+    @JsonIgnore
+    @OneToMany(mappedBy = "user")
+    private List<Comment> comments;
+
 }
