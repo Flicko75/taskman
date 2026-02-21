@@ -1,6 +1,6 @@
 package com.flicko.TaskMan.controllers;
 
-import com.flicko.TaskMan.DTOs.CommentCeate;
+import com.flicko.TaskMan.DTOs.CommentCreate;
 import com.flicko.TaskMan.DTOs.CommentUpdate;
 import com.flicko.TaskMan.models.Comment;
 import com.flicko.TaskMan.services.CommentService;
@@ -28,7 +28,7 @@ public class CommentController {
     }
 
     @PostMapping("/tasks/{taskId}/comments")
-    public Comment addComment(@PathVariable Long taskId, @Valid @RequestBody CommentCeate comment){
+    public Comment addComment(@PathVariable Long taskId, @Valid @RequestBody CommentCreate comment){
         return commentService.addComment(taskId, comment);
     }
 

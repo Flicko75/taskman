@@ -1,8 +1,10 @@
 package com.flicko.TaskMan.DTOs;
 
 import jakarta.validation.constraints.NotBlank;
+import lombok.Data;
 
-public class CommentCeate {
+@Data
+public class CommentCreate {
 
     @NotBlank
     private String content;

@@ -25,11 +25,11 @@ public class Comment {
     }
 
     @ManyToOne
-    @JoinColumn(name = "task_id", nullable = true)
+    @JoinColumn(name = "task_id", nullable = false)
     private Task task;
 
     @ManyToOne
-    @JoinColumn(name = "user_id", nullable = true)
+    @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
 }
