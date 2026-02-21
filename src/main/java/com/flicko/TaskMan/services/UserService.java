@@ -5,9 +5,11 @@ import com.flicko.TaskMan.DTOs.UserUpdate;
 import com.flicko.TaskMan.enums.UserRole;
 import com.flicko.TaskMan.exceptions.InvalidOperationException;
 import com.flicko.TaskMan.exceptions.ResourceNotFoundException;
+import com.flicko.TaskMan.models.Comment;
 import com.flicko.TaskMan.models.Task;
 import com.flicko.TaskMan.models.Team;
 import com.flicko.TaskMan.models.User;
+import com.flicko.TaskMan.repos.CommentRepository;
 import com.flicko.TaskMan.repos.TaskRepository;
 import com.flicko.TaskMan.repos.TeamRepository;
 import com.flicko.TaskMan.repos.UserRepository;
@@ -26,6 +28,8 @@ public class UserService {
     private final TaskRepository taskRepository;
 
     private final TeamRepository teamRepository;
+
+    private final CommentRepository commentRepository;
 
     public List<User> getAllUsers() {
         return userRepository.findAll();
@@ -50,9 +54,11 @@ public class UserService {
         }
 
         List<Task> tasks = taskRepository.findByUserId(id);
-
         tasks.forEach(t -> t.setUser(null));
         taskRepository.saveAll(tasks);
+
+        List<Comment> comments = commentRepository.findByUserId(id);
+        commentRepository.deleteAll(comments);
 
         userRepository.delete(user);
 
