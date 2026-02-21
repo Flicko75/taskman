@@ -1,5 +1,6 @@
 package com.flicko.TaskMan.services;
 
+import com.flicko.TaskMan.DTOs.TaskResponse;
 import com.flicko.TaskMan.DTOs.TaskUpdate;
 import com.flicko.TaskMan.exceptions.InvalidOperationException;
 import com.flicko.TaskMan.exceptions.ResourceNotFoundException;
@@ -21,20 +22,26 @@ public class TaskService {
 
     private final UserRepository userRepository;
 
-    public List<Task> getAllTasks() {
-        return taskRepository.findAll();
+    public List<TaskResponse> getAllTasks() {
+        List<Task> tasks = taskRepository.findAll();
+
+        return tasks.stream()
+                .map(this::mapToResponse)
+                .toList();
     }
 
-    public Task getTaskById(Long id) {
-        return taskRepository.findById(id)
+    public TaskResponse getTaskById(Long id) {
+        Task task = taskRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("No Task Found"));
+
+        return mapToResponse(task);
     }
 
-    public Task createTask(Task task) {
-        return taskRepository.save(task);
+    public TaskResponse createTask(Task task) {
+        return mapToResponse(taskRepository.save(task));
     }
 
-    public Task updateTask(Long id, TaskUpdate task) {
+    public TaskResponse updateTask(Long id, TaskUpdate task) {
         Task oldTask = taskRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("No Task Found"));
 
@@ -44,7 +51,7 @@ public class TaskService {
         oldTask.setPriority(task.getPriority());
         oldTask.setDueDate(task.getDueDate());
 
-        return taskRepository.save(oldTask);
+        return mapToResponse(taskRepository.save(oldTask));
     }
 
     public void deleteTask(Long id) {
@@ -55,7 +62,7 @@ public class TaskService {
     }
 
     @Transactional
-    public Task assignTask(Long taskId, Long userId) {
+    public TaskResponse assignTask(Long taskId, Long userId) {
         Task task = taskRepository.findById(taskId)
                 .orElseThrow(() -> new ResourceNotFoundException("Task not found"));
 
@@ -71,10 +78,10 @@ public class TaskService {
         }
         task.setUser(user);
 
-        return taskRepository.save(task);
+        return mapToResponse(taskRepository.save(task));
     }
 
-    public Task unassignTask(Long id) {
+    public TaskResponse unassignTask(Long id) {
         Task task = taskRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Task not found"));
 
@@ -83,6 +90,20 @@ public class TaskService {
         }
         task.setUser(null);
 
-        return taskRepository.save(task);
+        return mapToResponse(taskRepository.save(task));
+    }
+
+    private TaskResponse mapToResponse(Task task){
+        return new TaskResponse(
+                task.getId(),
+                task.getTitle(),
+                task.getDescription(),
+                task.getStatus(),
+                task.getPriority(),
+                task.getCreatedAt(),
+                task.getDueDate(),
+                task.getUser() != null ? task.getUser().getId() : null,
+                task.getTeam() != null ? task.getTeam().getId() : null
+        );
     }
 }

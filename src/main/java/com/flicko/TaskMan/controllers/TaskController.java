@@ -1,5 +1,6 @@
 package com.flicko.TaskMan.controllers;
 
+import com.flicko.TaskMan.DTOs.TaskResponse;
 import com.flicko.TaskMan.DTOs.TaskUpdate;
 import com.flicko.TaskMan.models.Task;
 import com.flicko.TaskMan.services.TaskService;
@@ -17,22 +18,22 @@ public class TaskController {
     private final TaskService taskService;
 
     @GetMapping
-    public List<Task> getAllTasks(){
+    public List<TaskResponse> getAllTasks(){
         return taskService.getAllTasks();
     }
 
     @GetMapping("/{id}")
-    public Task getTask(@PathVariable Long id){
+    public TaskResponse getTask(@PathVariable Long id){
         return taskService.getTaskById(id);
     }
 
     @PostMapping
-    public Task createTask(@Valid @RequestBody Task task){
+    public TaskResponse createTask(@Valid @RequestBody Task task){
         return taskService.createTask(task);
     }
 
     @PutMapping("/{id}")
-    public Task updateTask(@PathVariable Long id, @Valid @RequestBody TaskUpdate task ){
+    public TaskResponse updateTask(@PathVariable Long id, @Valid @RequestBody TaskUpdate task ){
         return taskService.updateTask(id, task);
     }
 
@@ -42,12 +43,12 @@ public class TaskController {
     }
 
     @PutMapping("/{taskId}/assign/{userId}")
-    public Task assignTask(@PathVariable Long taskId, @PathVariable Long userId){
+    public TaskResponse assignTask(@PathVariable Long taskId, @PathVariable Long userId){
         return taskService.assignTask(taskId, userId);
     }
 
     @PutMapping("/{id}/unassign")
-    public Task unassignTask(@PathVariable Long id){
+    public TaskResponse unassignTask(@PathVariable Long id){
         return taskService.unassignTask(id);
     }
 
