@@ -34,10 +34,10 @@ Member-
 
 - ~~Task CRUD operations~~
 - ~~Team management~~
+- ~~Comments on tasks~~
 - User registration and login
 - JWT Authentication
 - Role-based authorization (ADMIN, MANAGER, MEMBER)
-- Comments on tasks
 - Filtering and pagination
 - Docker deployment
 
@@ -89,6 +89,21 @@ Member-
    - Task must currently have a user assigned.
    - No team validation required.
 
+### Comment Rules
+1. Comment Creation
+   - Comment must belong to a task.
+   - Comment must have an author (user).
+   - Both task and user must belong to same team.
+   - Only content is provided by client.
+2. Comment Update
+   - Only comment content can be updated.
+   - User and Task cannot be changed.
+3. Comment Deletion
+   - Deleting a comment does not affect task.
+   - Deleting a comment does not affect user.
+4. User Deletion Impact
+   - All comments authored by the user are deleted before user deletion.
+
 ## Current Progress
 
 - Spring Boot project initialized
@@ -111,3 +126,5 @@ Member-
 - Team CRUD operations
 - User assignment and unassignment
 - Custom exceptions added
+- Validation for data implemented
+- Comment CRUD operations
