@@ -128,3 +128,4 @@ Member-
 - Custom exceptions added
 - Validation for data implemented
 - Comment CRUD operations
+- Response DTOs integrated
