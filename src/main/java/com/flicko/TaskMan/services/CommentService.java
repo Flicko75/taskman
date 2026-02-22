@@ -1,6 +1,7 @@
 package com.flicko.TaskMan.services;
 
 import com.flicko.TaskMan.DTOs.CommentCreate;
+import com.flicko.TaskMan.DTOs.CommentResponse;
 import com.flicko.TaskMan.DTOs.CommentUpdate;
 import com.flicko.TaskMan.exceptions.InvalidOperationException;
 import com.flicko.TaskMan.exceptions.ResourceNotFoundException;
@@ -27,20 +28,26 @@ public class CommentService {
 
     private final UserRepository userRepository;
 
-    public List<Comment> getAllComments(Long taskId) {
+    public List<CommentResponse> getAllComments(Long taskId) {
         taskRepository.findById(taskId)
                 .orElseThrow(() -> new ResourceNotFoundException("Task not found"));
 
-        return commentRepository.findByTaskIdOrderByCreatedAtAsc(taskId);
+        List<Comment> comments = commentRepository.findByTaskIdOrderByCreatedAtAsc(taskId);
+
+        return comments.stream()
+                .map(this::mapToResponse)
+                .toList();
     }
 
-    public Comment getCommentById(Long commentId) {
-        return commentRepository.findById(commentId)
+    public CommentResponse getCommentById(Long commentId) {
+        Comment comment = commentRepository.findById(commentId)
                 .orElseThrow(() -> new ResourceNotFoundException("Comment not found"));
+
+        return mapToResponse(comment);
     }
 
     @Transactional
-    public Comment addComment(Long taskId, @Valid CommentCreate comment) {
+    public CommentResponse addComment(Long taskId, @Valid CommentCreate comment) {
         Task task = taskRepository.findById(taskId)
                 .orElseThrow(() -> new ResourceNotFoundException("Task not found"));
 
@@ -58,17 +65,17 @@ public class CommentService {
         comment1.setTask(task);
         comment1.setContent(comment.getContent());
 
-        return commentRepository.save(comment1);
+        return mapToResponse(commentRepository.save(comment1));
     }
 
     @Transactional
-    public Comment updateComment(Long commentId, @Valid CommentUpdate comment) {
+    public CommentResponse updateComment(Long commentId, @Valid CommentUpdate comment) {
         Comment oldcomment = commentRepository.findById(commentId)
                 .orElseThrow(() -> new ResourceNotFoundException("Comment not found"));
 
         oldcomment.setContent(comment.getContent());
 
-        return commentRepository.save(oldcomment);
+        return mapToResponse(commentRepository.save(oldcomment));
     }
 
     @Transactional
@@ -79,4 +86,13 @@ public class CommentService {
         commentRepository.delete(comment);
     }
 
+    private CommentResponse mapToResponse(Comment comment){
+        return new CommentResponse(
+                comment.getId(),
+                comment.getContent(),
+                comment.getCreatedAt(),
+                comment.getTask() != null ? comment.getTask().getId() : null,
+                comment.getUser() != null ? comment.getUser().getId() : null
+        );
+    }
 }
