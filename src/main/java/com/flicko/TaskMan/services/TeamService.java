@@ -1,13 +1,12 @@
 package com.flicko.TaskMan.services;
 
+import com.flicko.TaskMan.DTOs.TeamResponse;
 import com.flicko.TaskMan.DTOs.TeamUpdate;
 import com.flicko.TaskMan.exceptions.DuplicateResourceException;
 import com.flicko.TaskMan.exceptions.InvalidOperationException;
 import com.flicko.TaskMan.exceptions.ResourceNotFoundException;
 import com.flicko.TaskMan.models.Team;
-import com.flicko.TaskMan.models.User;
 import com.flicko.TaskMan.repos.TeamRepository;
-import com.flicko.TaskMan.repos.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -20,16 +19,22 @@ public class TeamService {
 
     private final TeamRepository teamRepository;
 
-    public List<Team> getAllTeams() {
-        return teamRepository.findAll();
+    public List<TeamResponse> getAllTeams() {
+        List<Team> teams = teamRepository.findAll();
+
+        return teams.stream()
+                .map(this::mapToResponse)
+                .toList();
     }
 
-    public Team getTeamById(Long id) {
-        return teamRepository.findById(id)
+    public TeamResponse getTeamById(Long id) {
+        Team team = teamRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Team not found"));
+
+        return mapToResponse(team);
     }
 
-    public Team createTeam(Team team) {
+    public TeamResponse createTeam(Team team) {
         String normalizedName = team.getName().trim();
 
         if (teamRepository.existsByName(normalizedName)){
@@ -37,10 +42,10 @@ public class TeamService {
         }
 
         team.setName(normalizedName);
-        return teamRepository.save(team);
+        return mapToResponse(teamRepository.save(team));
     }
 
-    public Team updateTeam(Long id, TeamUpdate team) {
+    public TeamResponse updateTeam(Long id, TeamUpdate team) {
         Team oldTeam = teamRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Team not found"));
 
@@ -53,7 +58,7 @@ public class TeamService {
         oldTeam.setName(normalizedName);
         oldTeam.setDescription(team.getDescription());
 
-        return teamRepository.save(oldTeam);
+        return mapToResponse(teamRepository.save(oldTeam));
     }
 
     @Transactional
@@ -67,5 +72,14 @@ public class TeamService {
         team.getUsers().forEach(user -> user.setTeam(null));
 
         teamRepository.delete(team);
+    }
+
+    private TeamResponse mapToResponse(Team team){
+        return new TeamResponse(
+                team.getId(),
+                team.getName(),
+                team.getDescription(),
+                team.getCreatedAt()
+        );
     }
 }

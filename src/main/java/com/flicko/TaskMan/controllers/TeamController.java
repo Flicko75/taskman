@@ -1,5 +1,6 @@
 package com.flicko.TaskMan.controllers;
 
+import com.flicko.TaskMan.DTOs.TeamResponse;
 import com.flicko.TaskMan.DTOs.TeamUpdate;
 import com.flicko.TaskMan.models.Team;
 import com.flicko.TaskMan.services.TeamService;
@@ -17,22 +18,22 @@ public class TeamController {
     private final TeamService teamService;
 
     @GetMapping
-    public List<Team> getAllTeam(){
+    public List<TeamResponse> getAllTeam(){
         return teamService.getAllTeams();
     }
 
     @GetMapping("/{id}")
-    public Team getTeam(@PathVariable Long id){
+    public TeamResponse getTeam(@PathVariable Long id){
         return teamService.getTeamById(id);
     }
 
     @PostMapping
-    public Team createTeam(@Valid @RequestBody Team team){
+    public TeamResponse createTeam(@Valid @RequestBody Team team){
         return teamService.createTeam(team);
     }
 
     @PutMapping("/{id}")
-    public Team updateTeam(@PathVariable Long id, @Valid @RequestBody TeamUpdate team){
+    public TeamResponse updateTeam(@PathVariable Long id, @Valid @RequestBody TeamUpdate team){
         return teamService.updateTeam(id, team);
     }
 
