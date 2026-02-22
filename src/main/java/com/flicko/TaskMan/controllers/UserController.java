@@ -1,5 +1,6 @@
 package com.flicko.TaskMan.controllers;
 
+import com.flicko.TaskMan.DTOs.UserResponse;
 import com.flicko.TaskMan.DTOs.UserRoleUpdate;
 import com.flicko.TaskMan.DTOs.UserUpdate;
 import com.flicko.TaskMan.models.User;
@@ -19,27 +20,27 @@ public class UserController {
     private final UserService userService;
 
     @GetMapping
-    public List<User> getAllUsers(){
+    public List<UserResponse> getAllUsers(){
         return userService.getAllUsers();
     }
 
     @GetMapping("/{id}")
-    public User getUser(@PathVariable Long id){
+    public UserResponse getUser(@PathVariable Long id){
         return userService.getUserById(id);
     }
 
     @PostMapping
-    public User addUser(@Valid @RequestBody User user){
+    public UserResponse addUser(@Valid @RequestBody User user){
         return userService.addUser(user);
     }
 
     @PutMapping("/{id}")
-    public User updateUser(@PathVariable Long id, @Valid @RequestBody UserUpdate user){
+    public UserResponse updateUser(@PathVariable Long id, @Valid @RequestBody UserUpdate user){
         return userService.updateUser(id, user);
     }
 
     @PutMapping("/{id}/role")
-    public User updateUserRole(@PathVariable Long id, @Valid @RequestBody UserRoleUpdate user){
+    public UserResponse updateUserRole(@PathVariable Long id, @Valid @RequestBody UserRoleUpdate user){
         return userService.updateUserRole(id, user);
     }
 
@@ -49,12 +50,12 @@ public class UserController {
     }
 
     @PutMapping("/{userId}/assign/{teamId}")
-    public User assignUser(@PathVariable Long userId, @PathVariable Long teamId){
+    public UserResponse assignUser(@PathVariable Long userId, @PathVariable Long teamId){
         return userService.assignUser(userId, teamId);
     }
 
     @PutMapping("/{userId}/unassign")
-    public User unassignUser(@PathVariable Long userId){
+    public UserResponse unassignUser(@PathVariable Long userId){
         return userService.unassignUser(userId);
     }
 

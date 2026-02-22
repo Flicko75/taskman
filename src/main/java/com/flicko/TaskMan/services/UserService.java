@@ -1,5 +1,7 @@
 package com.flicko.TaskMan.services;
 
+import com.flicko.TaskMan.DTOs.TaskResponse;
+import com.flicko.TaskMan.DTOs.UserResponse;
 import com.flicko.TaskMan.DTOs.UserRoleUpdate;
 import com.flicko.TaskMan.DTOs.UserUpdate;
 import com.flicko.TaskMan.enums.UserRole;
@@ -31,17 +33,23 @@ public class UserService {
 
     private final CommentRepository commentRepository;
 
-    public List<User> getAllUsers() {
-        return userRepository.findAll();
+    public List<UserResponse> getAllUsers() {
+        List<User> users = userRepository.findAll();
+
+        return users.stream()
+                .map(this::mapToResponse)
+                .toList();
     }
 
-    public User getUserById(Long id) {
-        return userRepository.findById(id)
+    public UserResponse getUserById(Long id) {
+        User user = userRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+
+        return mapToResponse(user);
     }
 
-    public User addUser(User user) {
-        return userRepository.save(user);
+    public UserResponse addUser(User user) {
+        return mapToResponse(userRepository.save(user));
     }
 
     @Transactional
@@ -64,27 +72,27 @@ public class UserService {
 
     }
 
-    public User updateUser(Long id, UserUpdate user) {
+    public UserResponse updateUser(Long id, UserUpdate user) {
         User oldUser = userRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
         oldUser.setName(user.getName());
         oldUser.setEmail(user.getEmail());
 
-        return userRepository.save(oldUser);
+        return mapToResponse(userRepository.save(oldUser));
     }
 
-    public User updateUserRole(Long id, UserRoleUpdate user) {
+    public UserResponse updateUserRole(Long id, UserRoleUpdate user) {
         User oldUser = userRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
         oldUser.setRole(user.getRole());
 
-        return userRepository.save(oldUser);
+        return mapToResponse(userRepository.save(oldUser));
     }
 
     @Transactional
-    public User assignUser(Long userId, Long teamId) {
+    public UserResponse assignUser(Long userId, Long teamId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
@@ -93,19 +101,19 @@ public class UserService {
 
         if (user.getTeam() != null &&
             user.getTeam().getId().equals(team.getId()))
-            return user;
+            return mapToResponse(user);
 
         List<Task> tasks = user.getTasks();
         tasks.forEach(task -> task.setUser(null));
 
         user.setTeam(team);
 
-        return userRepository.save(user);
+        return mapToResponse(userRepository.save(user));
 
     }
 
     @Transactional
-    public User unassignUser(Long userId) {
+    public UserResponse unassignUser(Long userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
@@ -116,6 +124,16 @@ public class UserService {
         user.getTasks().forEach(task -> task.setUser(null));
 
         user.setTeam(null);
-        return user;
+        return mapToResponse(user);
+    }
+
+    private UserResponse mapToResponse(User user){
+        return new UserResponse(
+                user.getId(),
+                user.getName(),
+                user.getEmail(),
+                user.getRole(),
+                user.getTeam() != null ? user.getTeam().getId() : null
+        );
     }
 }
