@@ -1,11 +1,14 @@
 package com.flicko.TaskMan.controllers;
 
+import com.flicko.TaskMan.DTOs.PageResponse;
 import com.flicko.TaskMan.DTOs.TaskResponse;
 import com.flicko.TaskMan.DTOs.TaskUpdate;
 import com.flicko.TaskMan.models.Task;
 import com.flicko.TaskMan.services.TaskService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -18,8 +21,8 @@ public class TaskController {
     private final TaskService taskService;
 
     @GetMapping
-    public List<TaskResponse> getAllTasks(){
-        return taskService.getAllTasks();
+    public PageResponse<TaskResponse> getAllTasks(Pageable pageable){
+        return taskService.getAllTasks(pageable);
     }
 
     @GetMapping("/{id}")

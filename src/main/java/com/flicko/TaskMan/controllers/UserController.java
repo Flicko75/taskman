@@ -1,5 +1,6 @@
 package com.flicko.TaskMan.controllers;
 
+import com.flicko.TaskMan.DTOs.PageResponse;
 import com.flicko.TaskMan.DTOs.UserResponse;
 import com.flicko.TaskMan.DTOs.UserRoleUpdate;
 import com.flicko.TaskMan.DTOs.UserUpdate;
@@ -8,6 +9,7 @@ import com.flicko.TaskMan.services.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.Value;
+import org.springframework.data.domain.Pageable;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -20,8 +22,8 @@ public class UserController {
     private final UserService userService;
 
     @GetMapping
-    public List<UserResponse> getAllUsers(){
-        return userService.getAllUsers();
+    public PageResponse<UserResponse> getAllUsers(Pageable pageable){
+        return userService.getAllUsers(pageable);
     }
 
     @GetMapping("/{id}")

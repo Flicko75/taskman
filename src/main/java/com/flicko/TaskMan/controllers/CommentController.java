@@ -3,10 +3,12 @@ package com.flicko.TaskMan.controllers;
 import com.flicko.TaskMan.DTOs.CommentCreate;
 import com.flicko.TaskMan.DTOs.CommentResponse;
 import com.flicko.TaskMan.DTOs.CommentUpdate;
+import com.flicko.TaskMan.DTOs.PageResponse;
 import com.flicko.TaskMan.models.Comment;
 import com.flicko.TaskMan.services.CommentService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Pageable;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -19,8 +21,8 @@ public class CommentController {
     private final CommentService commentService;
 
     @GetMapping("/tasks/{taskId}/comments")
-    public List<CommentResponse> getAllComments(@PathVariable Long taskId){
-        return commentService.getAllComments(taskId);
+    public PageResponse<CommentResponse> getAllComments(@PathVariable Long taskId, Pageable pageable){
+        return commentService.getAllComments(taskId, pageable);
     }
 
     @GetMapping("comments/{commentId}")

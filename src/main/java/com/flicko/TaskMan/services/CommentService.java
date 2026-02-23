@@ -3,6 +3,7 @@ package com.flicko.TaskMan.services;
 import com.flicko.TaskMan.DTOs.CommentCreate;
 import com.flicko.TaskMan.DTOs.CommentResponse;
 import com.flicko.TaskMan.DTOs.CommentUpdate;
+import com.flicko.TaskMan.DTOs.PageResponse;
 import com.flicko.TaskMan.exceptions.InvalidOperationException;
 import com.flicko.TaskMan.exceptions.ResourceNotFoundException;
 import com.flicko.TaskMan.models.Comment;
@@ -11,12 +12,13 @@ import com.flicko.TaskMan.models.User;
 import com.flicko.TaskMan.repos.CommentRepository;
 import com.flicko.TaskMan.repos.TaskRepository;
 import com.flicko.TaskMan.repos.UserRepository;
+import com.flicko.TaskMan.utils.PageMapper;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -28,15 +30,15 @@ public class CommentService {
 
     private final UserRepository userRepository;
 
-    public List<CommentResponse> getAllComments(Long taskId) {
+    public PageResponse<CommentResponse> getAllComments(Long taskId, Pageable pageable) {
         taskRepository.findById(taskId)
                 .orElseThrow(() -> new ResourceNotFoundException("Task not found"));
 
-        List<Comment> comments = commentRepository.findByTaskIdOrderByCreatedAtAsc(taskId);
+        Page<Comment> comments = commentRepository.findByTaskIdOrderByCreatedAtAsc(taskId, pageable);
 
-        return comments.stream()
-                .map(this::mapToResponse)
-                .toList();
+        Page<CommentResponse> mapped = comments.map(this::mapToResponse);
+
+        return PageMapper.toPageResponse(mapped);
     }
 
     public CommentResponse getCommentById(Long commentId) {

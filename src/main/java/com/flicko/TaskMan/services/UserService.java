@@ -1,9 +1,6 @@
 package com.flicko.TaskMan.services;
 
-import com.flicko.TaskMan.DTOs.TaskResponse;
-import com.flicko.TaskMan.DTOs.UserResponse;
-import com.flicko.TaskMan.DTOs.UserRoleUpdate;
-import com.flicko.TaskMan.DTOs.UserUpdate;
+import com.flicko.TaskMan.DTOs.*;
 import com.flicko.TaskMan.enums.UserRole;
 import com.flicko.TaskMan.exceptions.InvalidOperationException;
 import com.flicko.TaskMan.exceptions.ResourceNotFoundException;
@@ -15,7 +12,10 @@ import com.flicko.TaskMan.repos.CommentRepository;
 import com.flicko.TaskMan.repos.TaskRepository;
 import com.flicko.TaskMan.repos.TeamRepository;
 import com.flicko.TaskMan.repos.UserRepository;
+import com.flicko.TaskMan.utils.PageMapper;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -33,12 +33,12 @@ public class UserService {
 
     private final CommentRepository commentRepository;
 
-    public List<UserResponse> getAllUsers() {
-        List<User> users = userRepository.findAll();
+    public PageResponse<UserResponse> getAllUsers(Pageable pageable) {
+        Page<User> users = userRepository.findAll(pageable);
 
-        return users.stream()
-                .map(this::mapToResponse)
-                .toList();
+        Page<UserResponse> mapped = users.map(this::mapToResponse);
+
+        return PageMapper.toPageResponse(mapped);
     }
 
     public UserResponse getUserById(Long id) {

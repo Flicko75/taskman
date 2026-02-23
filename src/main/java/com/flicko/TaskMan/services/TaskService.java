@@ -1,5 +1,6 @@
 package com.flicko.TaskMan.services;
 
+import com.flicko.TaskMan.DTOs.PageResponse;
 import com.flicko.TaskMan.DTOs.TaskResponse;
 import com.flicko.TaskMan.DTOs.TaskUpdate;
 import com.flicko.TaskMan.exceptions.InvalidOperationException;
@@ -8,11 +9,13 @@ import com.flicko.TaskMan.models.Task;
 import com.flicko.TaskMan.models.User;
 import com.flicko.TaskMan.repos.TaskRepository;
 import com.flicko.TaskMan.repos.UserRepository;
+import com.flicko.TaskMan.utils.PageMapper;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -22,12 +25,12 @@ public class TaskService {
 
     private final UserRepository userRepository;
 
-    public List<TaskResponse> getAllTasks() {
-        List<Task> tasks = taskRepository.findAll();
+    public PageResponse<TaskResponse> getAllTasks(Pageable pageable) {
+        Page<Task> page = taskRepository.findAll(pageable);
 
-        return tasks.stream()
-                .map(this::mapToResponse)
-                .toList();
+        Page<TaskResponse> mapped = page.map(this::mapToResponse);
+
+        return PageMapper.toPageResponse(mapped);
     }
 
     public TaskResponse getTaskById(Long id) {
