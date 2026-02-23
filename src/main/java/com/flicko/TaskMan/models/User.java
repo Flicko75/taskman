@@ -26,7 +26,6 @@ public class User {
     @NotBlank
     private String email;
 
-    @JsonIgnore
     @NotBlank
     private String password;
 

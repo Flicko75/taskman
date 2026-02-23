@@ -16,6 +16,7 @@ import com.flicko.TaskMan.utils.PageMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -33,6 +34,8 @@ public class UserService {
 
     private final CommentRepository commentRepository;
 
+    private final PasswordEncoder passwordEncoder;
+
     public PageResponse<UserResponse> getAllUsers(Pageable pageable) {
         Page<User> users = userRepository.findAll(pageable);
 
@@ -49,6 +52,9 @@ public class UserService {
     }
 
     public UserResponse addUser(User user) {
+        user.setPassword(passwordEncoder.encode(user.getPassword()));
+        System.out.println("Encoded password: " + user.getPassword());
+
         return mapToResponse(userRepository.save(user));
     }
 
