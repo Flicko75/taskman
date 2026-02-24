@@ -2,6 +2,8 @@ package com.flicko.TaskMan.controllers;
 
 import com.flicko.TaskMan.DTOs.LoginRequest;
 import com.flicko.TaskMan.DTOs.LoginResponse;
+import com.flicko.TaskMan.security.jwt.JwtService;
+import com.flicko.TaskMan.security.userdetails.CustomUserDetails;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -20,13 +22,23 @@ public class AuthController {
 
     private final AuthenticationManager authenticationManager;
 
+    private final JwtService jwtService;
+
     @PostMapping("/login")
     public ResponseEntity<LoginResponse> login(@Valid @RequestBody LoginRequest request){
-        authenticationManager.authenticate(
+        Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword())
         );
 
-        return ResponseEntity.ok(new LoginResponse("Login successful"));
+        String email = authentication.getName();
+        String role = authentication.getAuthorities()
+                .iterator()
+                .next()
+                .getAuthority();
+
+        String token = jwtService.generateToken(email, role);
+
+        return ResponseEntity.ok(new LoginResponse(token));
     }
 
 }
