@@ -36,9 +36,9 @@ Member-
 - ~~Team management~~
 - ~~Comments on tasks~~
 - User registration and login
-- JWT Authentication
+- ~~JWT Authentication~~
 - Role-based authorization (ADMIN, MANAGER, MEMBER)
-- Filtering and pagination
+- ~~Filtering and pagination~~
 - Docker deployment
 
 ## Business Rules
@@ -129,3 +129,6 @@ Member-
 - Validation for data implemented
 - Comment CRUD operations
 - Response DTOs integrated
+- Pagination for user,tasks,comments
+- BCrypt encrypted password
+- User authentication using Jwt
