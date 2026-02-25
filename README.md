@@ -132,3 +132,4 @@ Member-
 - Pagination for user,tasks,comments
 - BCrypt encrypted password
 - User authentication using Jwt
+- PostgreSql connected
