@@ -7,8 +7,8 @@ import com.flicko.TaskMan.models.Task;
 import com.flicko.TaskMan.services.TaskService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -21,36 +21,43 @@ public class TaskController {
     private final TaskService taskService;
 
     @GetMapping
+    @PreAuthorize("hasAnyRole('ADMIN','MANAGER','MEMBER')")
     public PageResponse<TaskResponse> getAllTasks(Pageable pageable){
         return taskService.getAllTasks(pageable);
     }
 
     @GetMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN','MANAGER','MEMBER')")
     public TaskResponse getTask(@PathVariable Long id){
         return taskService.getTaskById(id);
     }
 
     @PostMapping
+    @PreAuthorize("hasAnyRole('ADMIN','MANAGER')")
     public TaskResponse createTask(@Valid @RequestBody Task task){
         return taskService.createTask(task);
     }
 
     @PutMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN','MANAGER','MEMBER')")
     public TaskResponse updateTask(@PathVariable Long id, @Valid @RequestBody TaskUpdate task ){
         return taskService.updateTask(id, task);
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN','MANAGER')")
     public void deleteTask(@PathVariable Long id){
         taskService.deleteTask(id);
     }
 
     @PutMapping("/{taskId}/assign/{userId}")
+    @PreAuthorize("hasAnyRole('ADMIN','MANAGER')")
     public TaskResponse assignTask(@PathVariable Long taskId, @PathVariable Long userId){
         return taskService.assignTask(taskId, userId);
     }
 
     @PutMapping("/{id}/unassign")
+    @PreAuthorize("hasAnyRole('ADMIN','MANAGER')")
     public TaskResponse unassignTask(@PathVariable Long id){
         return taskService.unassignTask(id);
     }
