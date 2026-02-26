@@ -6,15 +6,21 @@ import com.flicko.TaskMan.DTOs.TaskUpdate;
 import com.flicko.TaskMan.exceptions.InvalidOperationException;
 import com.flicko.TaskMan.exceptions.ResourceNotFoundException;
 import com.flicko.TaskMan.models.Task;
+import com.flicko.TaskMan.models.Team;
 import com.flicko.TaskMan.models.User;
 import com.flicko.TaskMan.repos.TaskRepository;
+import com.flicko.TaskMan.repos.TeamRepository;
 import com.flicko.TaskMan.repos.UserRepository;
 import com.flicko.TaskMan.utils.PageMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.nio.file.AccessDeniedException;
 
 
 @Service
@@ -25,28 +31,133 @@ public class TaskService {
 
     private final UserRepository userRepository;
 
-    public PageResponse<TaskResponse> getAllTasks(Pageable pageable) {
-        Page<Task> page = taskRepository.findAll(pageable);
+    private final TeamRepository teamRepository;
+
+    public PageResponse<TaskResponse> getAllTasks(Pageable pageable) throws AccessDeniedException {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String currentEmail = authentication.getName();
+        String role = authentication.getAuthorities()
+                .iterator()
+                .next()
+                .getAuthority();
+
+        User user = userRepository.findByEmail(currentEmail)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+        Page<Task> page;
+
+        if (role.equals("ROLE_ADMIN")){
+            page = taskRepository.findAll(pageable);
+        }
+        else if (role.equals("ROLE_MANAGER")) {
+            if (user.getTeam() == null)
+                throw new InvalidOperationException("Team not assigned");
+            page = taskRepository.findByTeamId(user.getTeam().getId(), pageable);
+        }
+        else if (role.equals("ROLE_MEMBER")) {
+            page = taskRepository.findByUserId(user.getId(), pageable);
+        }
+        else {
+            throw new AccessDeniedException("Access Denied");
+        }
 
         Page<TaskResponse> mapped = page.map(this::mapToResponse);
 
         return PageMapper.toPageResponse(mapped);
     }
 
-    public TaskResponse getTaskById(Long id) {
+    public TaskResponse getTaskById(Long id) throws AccessDeniedException {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String currentEmail = authentication.getName();
+        String role = authentication.getAuthorities()
+                .iterator()
+                .next()
+                .getAuthority();
+
+        User user = userRepository.findByEmail(currentEmail)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+
         Task task = taskRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("No Task Found"));
+                .orElseThrow(() -> new ResourceNotFoundException("No Task Found"));
+
+        if (role.equals("ROLE_ADMIN")){
+        }
+        else if (role.equals("ROLE_MANAGER")) {
+            if (user.getTeam() == null ||
+                    !task.getTeam().getId().equals(user.getTeam().getId()))
+                throw new InvalidOperationException("Team id is wrong");
+        }
+        else if (role.equals("ROLE_MEMBER")) {
+            if (task.getUser() == null ||
+                !task.getUser().getId().equals(user.getId()))
+                throw new InvalidOperationException("Task not assigned to current user");
+        }
+        else {
+            throw new AccessDeniedException("Access Denied");
+        }
 
         return mapToResponse(task);
     }
 
-    public TaskResponse createTask(Task task) {
+    public TaskResponse createTask(Task task) throws AccessDeniedException {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String currentEmail = authentication.getName();
+        String role = authentication.getAuthorities()
+                .iterator()
+                .next()
+                .getAuthority();
+
+        if (role.equals("ROLE_MEMBER"))
+            throw new AccessDeniedException("Access Denied");
+
+        User user = userRepository.findByEmail(currentEmail)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+
+        if (task.getTeam() == null)
+            throw new AccessDeniedException("Task not assigned");
+
+        Team team = teamRepository.findById(task.getTeam().getId())
+                .orElseThrow(() -> new ResourceNotFoundException("Team not found"));
+
+        if (role.equals("ROLE_ADMIN")){
+            task.setTeam(team);
+        } else if (role.equals("ROLE_MANAGER")) {
+            if (user.getTeam() == null ||
+                !team.getId().equals(user.getTeam().getId()))
+                throw new InvalidOperationException("Team id is wrong");
+            task.setTeam(team);
+        } else
+            throw new AccessDeniedException("Access Denied");
+
         return mapToResponse(taskRepository.save(task));
     }
 
-    public TaskResponse updateTask(Long id, TaskUpdate task) {
+    public TaskResponse updateTask(Long id, TaskUpdate task) throws AccessDeniedException {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String currentEmail = authentication.getName();
+        String role = authentication.getAuthorities()
+                .iterator()
+                .next()
+                .getAuthority();
+
         Task oldTask = taskRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("No Task Found"));
+                .orElseThrow(() -> new ResourceNotFoundException("No Task Found"));
+
+        User user = userRepository.findByEmail(currentEmail)
+                .orElseThrow(() -> new ResourceNotFoundException("No User Found"));
+
+        if (role.equals("ROLE_MEMBER")){
+            if (oldTask.getUser() == null ||
+                !oldTask.getUser().getEmail().equals(currentEmail)){
+                throw new AccessDeniedException("You can only update your own assigned task");
+            }
+        }
+        if (role.equals("ROLE_MANAGER")){
+            if (user.getTeam() == null ||
+                oldTask.getTeam() == null ||
+                !oldTask.getTeam().getId().equals(user.getTeam().getId())){
+                throw new AccessDeniedException("You can only update tasks within your own team");
+            }
+        }
 
         oldTask.setTitle(task.getTitle());
         oldTask.setDescription(task.getDescription());
@@ -57,19 +168,54 @@ public class TaskService {
         return mapToResponse(taskRepository.save(oldTask));
     }
 
-    public void deleteTask(Long id) {
+    public void deleteTask(Long id) throws AccessDeniedException {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String currentEmail = authentication.getName();
+        String role = authentication.getAuthorities()
+                .iterator()
+                .next()
+                .getAuthority();
+
+        if (role.equals("ROLE_MEMBER"))
+            throw new AccessDeniedException("Access Denied");
+
         Task task = taskRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Task not found"));
+
+        User user = userRepository.findByEmail(currentEmail)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+
+        if (role.equals("ROLE_ADMIN")){
+
+        } else if (role.equals("ROLE_MANAGER")) {
+            if (user.getTeam() == null ||
+                    !task.getTeam().getId().equals(user.getTeam().getId()))
+                throw new AccessDeniedException("Can't delete task of other teams");
+        } else
+            throw new AccessDeniedException("Access Denied");
 
         taskRepository.delete(task);
     }
 
     @Transactional
-    public TaskResponse assignTask(Long taskId, Long userId) {
+    public TaskResponse assignTask(Long taskId, Long userId) throws AccessDeniedException {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String currentEmail = authentication.getName();
+        String role = authentication.getAuthorities()
+                .iterator()
+                .next()
+                .getAuthority();
+
+        if (role.equals("ROLE_MEMBER"))
+            throw new AccessDeniedException("Access Denied");
+
         Task task = taskRepository.findById(taskId)
                 .orElseThrow(() -> new ResourceNotFoundException("Task not found"));
 
         User user = userRepository.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+
+        User currentUser = userRepository.findByEmail(currentEmail)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
         if (task.getTeam() == null || user.getTeam() == null){
@@ -79,19 +225,50 @@ public class TaskService {
         if (!task.getTeam().getId().equals(user.getTeam().getId())){
             throw new InvalidOperationException("User needs to be of same team as task");
         }
-        task.setUser(user);
+
+        if (role.equals("ROLE_ADMIN")){
+            task.setUser(user);
+        } else if (role.equals("ROLE_MANAGER")) {
+            if (currentUser.getTeam() == null ||
+                !currentUser.getTeam().getId().equals(user.getTeam().getId()))
+                throw new InvalidOperationException("Can't assign task to other team");
+            task.setUser(user);
+        } else
+            throw new AccessDeniedException("Access Denied");
 
         return mapToResponse(taskRepository.save(task));
     }
 
-    public TaskResponse unassignTask(Long id) {
+    public TaskResponse unassignTask(Long id) throws AccessDeniedException {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String currentEmail = authentication.getName();
+        String role = authentication.getAuthorities()
+                .iterator()
+                .next()
+                .getAuthority();
+
+        if (role.equals("ROLE_MEMBER"))
+            throw new AccessDeniedException("Access Denied");
+
+        User user = userRepository.findByEmail(currentEmail)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+
         Task task = taskRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Task not found"));
 
         if (task.getUser() == null) {
             throw new InvalidOperationException("Task is already unassigned");
         }
-        task.setUser(null);
+
+        if (role.equals("ROLE_ADMIN")){
+            task.setUser(null);
+        } else if (role.equals("ROLE_MANAGER")) {
+            if (user.getTeam() == null ||
+                    !task.getTeam().getId().equals(user.getTeam().getId()))
+                throw new AccessDeniedException("Can't unassign task outside of your team");
+            task.setUser(null);
+        } else
+            throw new AccessDeniedException("Access Denied");
 
         return mapToResponse(taskRepository.save(task));
     }
