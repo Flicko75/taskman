@@ -133,3 +133,4 @@ Member-
 - BCrypt encrypted password
 - User authentication using Jwt
 - PostgreSql connected
+- Role Based authorization of tasks
