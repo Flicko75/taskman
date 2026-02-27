@@ -9,6 +9,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.nio.file.AccessDeniedException;
 import java.util.List;
 
 @RestController
@@ -20,13 +21,13 @@ public class TeamController {
 
     @GetMapping
     @PreAuthorize("hasAnyRole('ADMIN','MANAGER','MEMBER')")
-    public List<TeamResponse> getAllTeam(){
+    public List<TeamResponse> getAllTeam() throws AccessDeniedException {
         return teamService.getAllTeams();
     }
 
     @GetMapping("/{id}")
     @PreAuthorize("hasAnyRole('ADMIN','MANAGER','MEMBER')")
-    public TeamResponse getTeam(@PathVariable Long id){
+    public TeamResponse getTeam(@PathVariable Long id) throws AccessDeniedException {
         return teamService.getTeamById(id);
     }
 
