@@ -15,6 +15,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
+import java.nio.file.AccessDeniedException;
 import java.util.List;
 
 @RestController
@@ -25,26 +26,26 @@ public class UserController {
     private final UserService userService;
 
     @GetMapping
-    @PreAuthorize("hasRole('ADMIN')")
-    public PageResponse<UserResponse> getAllUsers(Pageable pageable){
+    @PreAuthorize("hasAnyRole('ADMIN','MANAGER')")
+    public PageResponse<UserResponse> getAllUsers(Pageable pageable) throws AccessDeniedException {
         return userService.getAllUsers(pageable);
     }
 
     @GetMapping("/{id}")
     @PreAuthorize("hasAnyRole('ADMIN','MANAGER')")
-    public UserResponse getUser(@PathVariable Long id){
+    public UserResponse getUser(@PathVariable Long id) throws AccessDeniedException {
         return userService.getUserById(id);
     }
 
     @PostMapping
     @PreAuthorize("hasRole('ADMIN')")
-    public UserResponse addUser(@Valid @RequestBody User user){
+    public UserResponse addUser(@Valid @RequestBody User user) throws AccessDeniedException {
         return userService.addUser(user);
     }
 
     @PutMapping("/{id}")
-    @PreAuthorize("hasRole('ADMIN')")
-    public UserResponse updateUser(@PathVariable Long id, @Valid @RequestBody UserUpdate user){
+    @PreAuthorize("hasAnyRole('ADMIN','MANAGER','MEMBER')")
+    public UserResponse updateUser(@PathVariable Long id, @Valid @RequestBody UserUpdate user) throws AccessDeniedException {
         return userService.updateUser(id, user);
     }
 
