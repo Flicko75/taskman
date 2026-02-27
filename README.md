@@ -37,7 +37,7 @@ Member-
 - ~~Comments on tasks~~
 - User registration and login
 - ~~JWT Authentication~~
-- Role-based authorization (ADMIN, MANAGER, MEMBER)
+- ~~Role-based authorization (ADMIN, MANAGER, MEMBER)~~
 - ~~Filtering and pagination~~
 - Docker deployment
 
@@ -133,4 +133,4 @@ Member-
 - BCrypt encrypted password
 - User authentication using Jwt
 - PostgreSql connected
-- Role Based authorization of tasks
+- Role Based authorization of task, user, comment and team
