@@ -134,3 +134,4 @@ Member-
 - User authentication using Jwt
 - PostgreSql connected
 - Role Based authorization of task, user, comment and team
+- Soft deletion for users implemented
