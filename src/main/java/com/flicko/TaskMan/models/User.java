@@ -48,4 +48,6 @@ public class User {
 
     private boolean deleted = false;
 
+    private int tokenVersion = 0;
+
 }

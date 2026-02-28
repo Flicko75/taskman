@@ -1,5 +1,6 @@
 package com.flicko.TaskMan.security.jwt;
 
+import com.flicko.TaskMan.models.User;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
@@ -23,13 +24,14 @@ public class JwtService {
         return Keys.hmacShaKeyFor( Decoders.BASE64.decode(secret));
     }
 
-    public String generateToken(String email, String role){
+    public String generateToken(User user){
         Date now = new Date();
         Date expiry = new Date(now.getTime() + expiration);
 
         return Jwts.builder()
-                .subject(email)
-                .claim("role", role)
+                .subject(user.getEmail())
+                .claim("role", user.getRole().name())
+                .claim("tokenVersion", user.getTokenVersion())
                 .issuedAt(now)
                 .expiration(expiry)
                 .signWith(getSigningKey())
@@ -43,6 +45,15 @@ public class JwtService {
                 .parseSignedClaims(token)
                 .getPayload()
                 .getSubject();
+    }
+
+    public Integer extractTokenVersion(String token){
+        return Jwts.parser()
+                .verifyWith((SecretKey) getSigningKey())
+                .build()
+                .parseSignedClaims(token)
+                .getPayload()
+                .get("tokenVersion", Integer.class);
     }
 
     public boolean isTokenValid(String token, UserDetails userDetails){

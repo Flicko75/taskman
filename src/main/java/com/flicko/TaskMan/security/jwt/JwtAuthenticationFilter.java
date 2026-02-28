@@ -1,5 +1,6 @@
 package com.flicko.TaskMan.security.jwt;
 
+import com.flicko.TaskMan.security.userdetails.CustomUserDetails;
 import com.flicko.TaskMan.security.userdetails.CustomUserDetailsService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -42,6 +43,15 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             UserDetails userDetails = customUserDetailsService.loadUserByUsername(username);
 
             if (jwtService.isTokenValid(token, userDetails)){
+                Integer tokenVersion = jwtService.extractTokenVersion(token);
+
+                CustomUserDetails customUserDetails = (CustomUserDetails) userDetails;
+
+                if (!tokenVersion.equals(customUserDetails.getTokenVersion())){
+                    filterChain.doFilter(request, response);
+                    return;
+                }
+
                 UsernamePasswordAuthenticationToken authenticationToken =
                         new UsernamePasswordAuthenticationToken(
                                 userDetails,

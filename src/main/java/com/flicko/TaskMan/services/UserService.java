@@ -196,6 +196,14 @@ public class UserService {
         return mapToResponse(user);
     }
 
+    public void logoutCurrentUser(){
+        User user = securityUtils.getCurrentUser();
+
+        user.setTokenVersion(user.getTokenVersion() + 1);
+
+        userRepository.save(user);
+    }
+
     private UserResponse mapToResponse(User user){
         return new UserResponse(
                 user.getId(),

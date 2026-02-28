@@ -2,8 +2,12 @@ package com.flicko.TaskMan.controllers;
 
 import com.flicko.TaskMan.DTOs.LoginRequest;
 import com.flicko.TaskMan.DTOs.LoginResponse;
+import com.flicko.TaskMan.exceptions.ResourceNotFoundException;
+import com.flicko.TaskMan.models.User;
+import com.flicko.TaskMan.repos.UserRepository;
 import com.flicko.TaskMan.security.jwt.JwtService;
 import com.flicko.TaskMan.security.userdetails.CustomUserDetails;
+import com.flicko.TaskMan.services.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -24,6 +28,10 @@ public class AuthController {
 
     private final JwtService jwtService;
 
+    private final UserService userService;
+
+    private final UserRepository userRepository;
+
     @PostMapping("/login")
     public ResponseEntity<LoginResponse> login(@Valid @RequestBody LoginRequest request){
         Authentication authentication = authenticationManager.authenticate(
@@ -31,14 +39,18 @@ public class AuthController {
         );
 
         String email = authentication.getName();
-        String role = authentication.getAuthorities()
-                .iterator()
-                .next()
-                .getAuthority();
 
-        String token = jwtService.generateToken(email, role);
+        User user = userRepository.findByEmailAndDeletedFalse(email)
+                .orElseThrow(() -> new ResourceNotFoundException("user not found"));
+
+        String token = jwtService.generateToken(user);
 
         return ResponseEntity.ok(new LoginResponse(token));
+    }
+
+    @PostMapping("/logout")
+    public void logout(){
+        userService.logoutCurrentUser();
     }
 
 }

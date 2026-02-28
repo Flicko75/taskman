@@ -14,11 +14,13 @@ public class CustomUserDetails implements UserDetails {
     private final String email;
     private final String password;
     private final String role;
+    private final int tokenVersion;
 
     public CustomUserDetails(User user){
         this.email = user.getEmail();
         this.password = user.getPassword();
         this.role = String.valueOf(user.getRole());
+        this.tokenVersion = user.getTokenVersion();
     }
 
     @Override
@@ -36,6 +38,10 @@ public class CustomUserDetails implements UserDetails {
     @Override
     public String getUsername() {
         return email;
+    }
+
+    public int getTokenVersion() {
+        return tokenVersion;
     }
 
     @Override
