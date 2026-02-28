@@ -19,7 +19,7 @@ public class SecurityUtils {
 
         String currentEmail = authentication.getName();
 
-        return userRepository.findByEmail(currentEmail)
+        return userRepository.findByEmailAndDeletedFalse(currentEmail)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));
     }
 

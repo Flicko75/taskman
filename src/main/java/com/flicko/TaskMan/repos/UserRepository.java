@@ -11,10 +11,16 @@ import java.util.Optional;
 
 public interface UserRepository extends JpaRepository<User, Long> {
 
-    public Long countByRole(UserRole role);
+    Long countByRole(UserRole role);
 
-    Optional<User> findByEmail(String email);
+    Long countByRoleAndDeletedFalse(UserRole role);
 
-    Page<User> findByTeamId(Long id, Pageable pageable);
+    Optional<User> findByIdAndDeletedFalse(Long id);
+
+    Optional<User> findByEmailAndDeletedFalse(String email);
+
+    Page<User> findByDeletedFalse(Pageable pageable);
+
+    Page<User> findByTeamIdAndDeletedFalse(Long id, Pageable pageable);
 
 }

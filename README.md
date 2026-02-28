@@ -35,7 +35,7 @@ Member-
 - ~~Task CRUD operations~~
 - ~~Team management~~
 - ~~Comments on tasks~~
-- User registration and login
+- ~~User registration and login~~
 - ~~JWT Authentication~~
 - ~~Role-based authorization (ADMIN, MANAGER, MEMBER)~~
 - ~~Filtering and pagination~~

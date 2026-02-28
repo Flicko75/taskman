@@ -171,7 +171,7 @@ public class TaskService {
         Task task = taskRepository.findById(taskId)
                 .orElseThrow(() -> new ResourceNotFoundException("Task not found"));
 
-        User user = userRepository.findById(userId)
+        User user = userRepository.findByIdAndDeletedFalse(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
         if (task.getTeam() == null || user.getTeam() == null){

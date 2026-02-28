@@ -15,6 +15,7 @@ import com.flicko.TaskMan.repos.UserRepository;
 import com.flicko.TaskMan.utils.PageMapper;
 import com.flicko.TaskMan.utils.SecurityUtils;
 import lombok.RequiredArgsConstructor;
+import org.hibernate.engine.spi.SelfDirtinessTracker;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -46,11 +47,11 @@ public class UserService {
         Page<User> users;
 
         if (currentUser.getRole() == UserRole.ADMIN){
-            users = userRepository.findAll(pageable);
+            users = userRepository.findByDeletedFalse(pageable);
         } else if (currentUser.getRole() == UserRole.MANAGER) {
             if (currentUser.getTeam() == null)
                 throw new InvalidOperationException("User not assigned to any team");
-            users = userRepository.findByTeamId(currentUser.getTeam().getId(), pageable);
+            users = userRepository.findByTeamIdAndDeletedFalse(currentUser.getTeam().getId(), pageable);
         } else
             throw new AccessDeniedException("Access Denied");
 
@@ -62,12 +63,14 @@ public class UserService {
     public UserResponse getUserById(Long id) throws AccessDeniedException {
         User currentUser = securityUtils.getCurrentUser();
 
-        User user = userRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+        User user;
         
         if (currentUser.getRole() == UserRole.ADMIN){
-            
+            user = userRepository.findById(id)
+                    .orElseThrow(() -> new ResourceNotFoundException("User not found"));
         } else if (currentUser.getRole() == UserRole.MANAGER) {
+            user = userRepository.findByIdAndDeletedFalse(id)
+                    .orElseThrow(() -> new ResourceNotFoundException("User not found"));
             if (currentUser.getTeam() == null ||
                 user.getTeam() == null ||
                 !currentUser.getTeam().getId().equals(user.getTeam().getId()))
@@ -91,10 +94,16 @@ public class UserService {
 
     @Transactional
     public void deleteUser(Long id) {
-        User user = userRepository.findById(id)
+        User currentUser = securityUtils.getCurrentUser();
+
+        User user = userRepository.findByIdAndDeletedFalse(id)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
-        if (user.getRole() == UserRole.ADMIN && userRepository.countByRole(UserRole.ADMIN) <= 1){
+        if (currentUser.getId().equals(user.getId())){
+            throw new InvalidOperationException("Self deletion not allowed");
+        }
+
+        if (user.getRole() == UserRole.ADMIN && userRepository.countByRoleAndDeletedFalse(UserRole.ADMIN) <= 1){
             throw new InvalidOperationException("Can't delete only ADMIN");
         }
 
@@ -105,14 +114,15 @@ public class UserService {
         List<Comment> comments = commentRepository.findByUserId(id);
         commentRepository.deleteAll(comments);
 
-        userRepository.delete(user);
+        user.setDeleted(true);
+        userRepository.save(user);
 
     }
 
     public UserResponse updateUser(Long id, UserUpdate user) throws AccessDeniedException {
         User currentUser = securityUtils.getCurrentUser();
 
-        User oldUser = userRepository.findById(id)
+        User oldUser = userRepository.findByIdAndDeletedFalse(id)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
         if (currentUser.getRole() == UserRole.ADMIN){
@@ -132,14 +142,14 @@ public class UserService {
     public UserResponse updateUserRole(Long id, UserRoleUpdate user) {
         User currentUser = securityUtils.getCurrentUser();
 
-        User oldUser = userRepository.findById(id)
+        User oldUser = userRepository.findByIdAndDeletedFalse(id)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
         if (currentUser.getId().equals(oldUser.getId()))
             throw new InvalidOperationException("Self demotion not allowed");
         if (oldUser.getRole() == UserRole.ADMIN &&
             user.getRole() != UserRole.ADMIN &&
-            userRepository.countByRole(UserRole.ADMIN) <= 1)
+            userRepository.countByRoleAndDeletedFalse(UserRole.ADMIN) <= 1)
             throw new InvalidOperationException("Can't remove last admin");
         oldUser.setRole(user.getRole());
 
@@ -148,7 +158,7 @@ public class UserService {
 
     @Transactional
     public UserResponse assignUser(Long userId, Long teamId) {
-        User user = userRepository.findById(userId)
+        User user = userRepository.findByIdAndDeletedFalse(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
         if (user.getRole() == UserRole.ADMIN){
@@ -173,7 +183,7 @@ public class UserService {
 
     @Transactional
     public UserResponse unassignUser(Long userId) {
-        User user = userRepository.findById(userId)
+        User user = userRepository.findByIdAndDeletedFalse(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
         if (user.getTeam() == null){
