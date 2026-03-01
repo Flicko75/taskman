@@ -12,7 +12,12 @@ import java.util.List;
 
 @Entity
 @Data
-@Table(name = "users")
+@Table(name = "users",
+        indexes = {
+            @Index(name = "idx_user_deleted", columnList = "deleted"),
+            @Index(name = "idx_user_role", columnList = "role"),
+            @Index(name = "idx_user_team_deleted", columnList = "team_id, deleted")
+        })
 public class User {
 
     @Id
