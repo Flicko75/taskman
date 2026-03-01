@@ -39,7 +39,7 @@ Member-
 - ~~JWT Authentication~~
 - ~~Role-based authorization (ADMIN, MANAGER, MEMBER)~~
 - ~~Filtering and pagination~~
-- Docker deployment
+- ~~Docker deployment~~
 
 ## Business Rules
 ### User Rules
@@ -137,3 +137,5 @@ Member-
 - Soft deletion for users implemented
 - Token versioning for securing logout
 - Indexing user entity for better DB performance
+- Dockerized app
+- Force logout endpoint for admin 
