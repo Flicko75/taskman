@@ -135,3 +135,5 @@ Member-
 - PostgreSql connected
 - Role Based authorization of task, user, comment and team
 - Soft deletion for users implemented
+- Token versioning for securing logout
+- Indexing user entity for better DB performance
