@@ -204,6 +204,20 @@ public class UserService {
         userRepository.save(user);
     }
 
+    public void forceLogoutUser(Long id){
+        User currentUser = securityUtils.getCurrentUser();
+        User user = userRepository.findByIdAndDeletedFalse(id)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+
+        if (currentUser.getId().equals(user.getId())){
+            throw new InvalidOperationException("Can't self force logout");
+        }
+
+        user.setTokenVersion(user.getTokenVersion() + 1);
+
+        userRepository.save(user);
+    }
+
     private UserResponse mapToResponse(User user){
         return new UserResponse(
                 user.getId(),

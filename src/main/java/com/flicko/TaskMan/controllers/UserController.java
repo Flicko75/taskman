@@ -10,6 +10,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.Value;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -71,6 +72,13 @@ public class UserController {
     @PreAuthorize("hasRole('ADMIN')")
     public UserResponse unassignUser(@PathVariable Long userId){
         return userService.unassignUser(userId);
+    }
+
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    @PostMapping("/{id}/force-logout")
+    @PreAuthorize("hasRole('ADMIN')")
+    public void forceLogoutUser(@PathVariable Long id){
+        userService.forceLogoutUser(id);
     }
 
 }
