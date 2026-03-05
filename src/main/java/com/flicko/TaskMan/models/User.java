@@ -8,6 +8,7 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Entity
@@ -54,5 +55,7 @@ public class User {
     private boolean deleted = false;
 
     private int tokenVersion = 0;
+
+    private LocalDateTime lastLoginAt;
 
 }
