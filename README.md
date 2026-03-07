@@ -139,3 +139,5 @@ Member-
 - Indexing user entity for better DB performance
 - Dockerized app
 - Force logout endpoint for admin 
+- Flyway migration
+- Last login time added to user entity
