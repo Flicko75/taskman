@@ -141,3 +141,4 @@ Member-
 - Force logout endpoint for admin 
 - Flyway migration
 - Last login time added to user entity
+- Unit tests for each service added
