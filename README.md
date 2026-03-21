@@ -49,9 +49,13 @@ git clone https://github.com/Flicko75/taskman.git
 cd TaskMan
  ```
 ### Run locally
-``` mvn spring-boot:run ```
+``` 
+mvn spring-boot:run
+```
 ### With Docker
-``` docker-compose up ```
+``` 
+docker-compose up
+```
 
 ## API Endpoints (Core)
 - ``` POST   /api/auth/login ```
