@@ -1,47 +1,86 @@
 TaskMan: A Team Task & Workflow Management System
 
-A Backend project using SpringBoot that lets teams handle task management, user assigning and workflow status tracking.
-This project is built from scratch to understand core backend features and implementation techniques.
+TaskMan is a backend system for managing tasks in teams, providing role-based access control and secure authentication.
 
-The following model is planned for now:
-![model-relations](relational-diagram.png)
+This project is built with Spring Boot, focusing on practical backend architecture, security, and scalability.
 
+## Core Features
+- JWT-based Authentication
+- Role-based Access Control
+  1. ADMIN 
+  2. MANAGER 
+  3. MEMBER
+- Task Management 
+  1. Create 
+  2. Update 
+  3. Assign
+- Team Management
+- Comment System on Tasks
+- Pagination & Filtering
+- Token Versioning
+- Global Logout
+- Soft Deletion of Users
+- Dockerized Application
+- Flyway DB Migration
 
-## Planned Role Based Access
-Admin -
-- Create teams
-- Add/remove users from teams
-- Assign roles
-- Delete teams
-- View everything
+Followed model:
+![model-relations](taskman.drawio.png)
 
-Manager-
-- Create tasks
-- Assign tasks to users
-- Update any task in their team
-- View team tasks
-- Add comments
+## Architecture
+``` Controller –> Service –> Repository ```
 
-Member-
-- View tasks assigned to them
-- Update status of their own tasks
-- Add comments
-- Cannot assign tasks
-- Cannot delete teams
+- DTO-based API (without entity exposure)
+- Business rules implemented in service layer
+- Security implemented through JWT with filter chain
 
+## Tech Stack
+- Java 21
+- Spring Boot
+- Spring Security (JWT)
+- PostgreSQL
+- Hibernate/JPA
+- Flyway
+- Docker
+- JUnit, Mockito
 
-## Planned Features
+## How to Run
+``` 
+git clone https://github.com/Flicko75/taskman.git
+cd TaskMan
+ ```
+### Run locally
+``` mvn spring-boot:run ```
+### With Docker
+``` docker-compose up ```
 
-- ~~Task CRUD operations~~
-- ~~Team management~~
-- ~~Comments on tasks~~
-- ~~User registration and login~~
-- ~~JWT Authentication~~
-- ~~Role-based authorization (ADMIN, MANAGER, MEMBER)~~
-- ~~Filtering and pagination~~
-- ~~Docker deployment~~
+## API Endpoints (Core)
+- ``` POST   /api/auth/login ```
+- ``` POST   /api/tasks ```
+- ``` GET    /api/tasks ```
+- ``` PUT    /api/tasks/{id} ```
+- ``` DELETE /api/tasks/{id} ```
 
-## Business Rules
+## Business Rules (Highlights)
+### Users
+- Soft deletion (not removed from DB)
+- Token versioning for secure logout
+- Cannot delete last ADMIN
+### Tasks
+- Must belong to a team
+- Assignment only within same team
+- Reassignment allowed
+### Teams
+- Unique name constraint
+- Cannot delete if tasks exist
+### Comments
+- Must belong to task + user
+- Team consistency enforced
+
+## Testing
+- Unit tests for service layer (~150 tests)
+- Integration tests for full request flow
+
+## Business Rules (Detailed)
 ### User Rules
 1. User Creation 
    - User can be created without belonging to a team. 
@@ -60,6 +99,19 @@ Member-
    - User must currently belong to a team.
    - All assigned tasks are unassigned.
    - Then user.team is set to null.
+5. User Update
+   - Email must be unique.
+   - Changes to roles must be in order of hierarchy:
+     - Only ADMINs can assign ADMIN roles.
+   - A user cannot demote themselves.
+6. User Authentication
+   - Login will fail if the user has been soft deleted.
+   - Token becomes invalid if:
+     - Token version has changed (logout)
+     - User has been deleted
+7. Last Login Tracking
+   - lastLoginAt will be updated with every successful login.
+   - Unsuccessful login attempts will not update this field.
 
 ### Team Rules
 1. Team Creation
@@ -76,6 +128,13 @@ Member-
    - If team has users:
      - Users are automatically unassigned.
      - Team is deleted only after cleanup.
+4. Team Membership Consistency
+   - A user may only be a member of one team at a time.
+   - A team must exist before users are assigned to it.
+5. Team Visibility
+   - Non-admin users may only see:
+     - Their own teams
+     - Their own tasks within a team
 
 ### Task Rules
 1. Task Creation
@@ -88,6 +147,14 @@ Member-
 3. Unassign Task
    - Task must currently have a user assigned.
    - No team validation required.
+4. Task Update
+   - Task must be present before updating.
+7. Task Deletion
+   - Only ADMIN or MANAGER can delete tasks.
+8. Task Fetching
+   - Users can only view:
+     - tasks assigned to them OR
+     - tasks within their team (depending on role)
 
 ### Comment Rules
 1. Comment Creation
@@ -103,42 +170,38 @@ Member-
    - Deleting a comment does not affect user.
 4. User Deletion Impact
    - All comments authored by the user are deleted before user deletion.
+5. Comment Authorization
+   - Only the author of the comment can update it.
+   - Only:
+     - author
+     - admin
+     can delete a comment.
+6. Comment Visibility
+   - Users can only view comments for tasks within their team
 
-## Current Progress
+### Security Rules
+1. Token Validation
+   - All requests must contain a valid JWT token, except for public endpoints.
+   - Token should contain:
+     - username
+     - role
+     - tokenVersion
+2. Soft Deleted Users
+   - Cannot:
+     - login
+     - access any API
+   - Still referenced by:
+     - admin for historical records
 
-- Spring Boot project initialized
-- GitHub repository connected
-- Entities created:
-  - User
-  - Task
-  - Team
-  - Comment
-- Enums added:
-  - TaskStatus
-  - TaskPriority
-  - UserRole
-- Basic database structure prepared
-- Task CRUD operations
-- H2 database connected
-- User CRUD operations
-- Task and User relationship mapped
-- Task assignment and unassignment handled
-- Team CRUD operations
-- User assignment and unassignment
-- Custom exceptions added
-- Validation for data implemented
-- Comment CRUD operations
-- Response DTOs integrated
-- Pagination for user,tasks,comments
-- BCrypt encrypted password
-- User authentication using Jwt
-- PostgreSql connected
-- Role Based authorization of task, user, comment and team
-- Soft deletion for users implemented
-- Token versioning for securing logout
-- Indexing user entity for better DB performance
-- Dockerized app
-- Force logout endpoint for admin 
-- Flyway migration
-- Last login time added to user entity
-- Unit tests for each service added
+### Data Integrity Rules
+1. Referential Integrity
+   - Tasks must always reference a valid team.
+   - Comments must always reference a valid task.
+2. Cascading Behavior
+   - Deleting task → deletes comments
+   - Deleting user → deletes comments authored
+3. Indexing
+   - Indexed fields:
+     - user email
+     - task status
+     - team name
