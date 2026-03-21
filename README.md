@@ -23,7 +23,7 @@ This project is built with Spring Boot, focusing on practical backend architectu
 - Dockerized Application
 - Flyway DB Migration
 
-Followed model:
+## Followed model:
 ![model-relations](taskman.drawio.png)
 
 ## Architecture
