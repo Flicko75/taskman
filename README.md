@@ -1,4 +1,4 @@
-TaskMan: A Team Task & Workflow Management System
+# TaskMan: A Team Task & Workflow Management System
 
 TaskMan is a backend system for managing tasks in teams, providing role-based access control and secure authentication.
 
